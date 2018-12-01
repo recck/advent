@@ -1,0 +1,19 @@
+{
+    "name": "recck/advent",
+    "description": "Advent of Code",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcus Recck",
+            "email": "marcus@recck.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Advent\\": "src/"
+        }
+    }
+}
