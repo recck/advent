@@ -12,4 +12,13 @@ class Filesystem
     {
         return file_get_contents($path);
     }
+
+    /**
+     * @param string $path
+     * @return array
+     */
+    public function contentsAsArray(string $path): array
+    {
+        return file($path);
+    }
 }

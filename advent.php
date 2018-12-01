@@ -15,4 +15,4 @@ $day = array_shift($argv);
 $input = $argv;
 
 $problem = \Advent\Solver\SolverFactory::create($day);
-echo $problem->solve($input) . PHP_EOL;
+$problem->solve($input) . PHP_EOL;
