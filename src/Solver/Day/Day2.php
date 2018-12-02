@@ -40,11 +40,8 @@ class Day2 extends AbstractProblem
                 $diff = $this->characterDifferences($lineA, $lineB);
 
                 if (count($diff) === 1) {
-                    $position = array_keys($diff)[0];
-                    $strA = str_split($lineA);
-                    unset($strA[$position]);
-
-                    $commons = implode($strA);
+                    $char = $lineA[array_keys($diff)[0]];
+                    $commons = str_replace($char, '', $lineA);
 
                     break 2;
                 }
@@ -63,16 +60,14 @@ class Day2 extends AbstractProblem
 
     private function characterDifferences(string $a, string $b): array
     {
-        $ordDiff = [];
+        $diff = [];
 
         for ($i = 0; $i < strlen($a); $i++) {
-            $diff = abs(ord($a[$i]) - ord($b[$i]));
-
-            if ($diff > 0) {
-                $ordDiff[$i] = abs(ord($a[$i]) - ord($b[$i]));
+            if ($a[$i] != $b[$i]) {
+                $diff[$i] = true;
             }
         }
 
-        return $ordDiff;
+        return $diff;
     }
 }
