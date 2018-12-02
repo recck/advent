@@ -3,9 +3,7 @@
 namespace Advent\Solver;
 
 use Advent\AbstractProblem;
-use Advent\Solver\Day\Day1;
 use Advent\Util\Filesystem;
-use http\Exception\RuntimeException;
 
 class SolverFactory
 {
@@ -17,12 +15,12 @@ class SolverFactory
     {
         $filesystem = new Filesystem();
 
-        switch ($day) {
-            case 1:
-                return new Day1($filesystem);
-                break;
-            default:
-                throw new RuntimeException('Day ' . $day . ' not implemented');
+        $className = 'Advent\Solver\Day\Day' . $day;
+
+        if (class_exists($className)) {
+            return new $className($filesystem);
         }
+
+        throw new \RuntimeException('Day ' . $day . ' not implemented');
     }
 }
