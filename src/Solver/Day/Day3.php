@@ -17,45 +17,32 @@ class Day3 extends AbstractProblem
     {
         $lines = $this->filesystem->contentsAsArray($input[0]);
 
-        $this->board = array_fill(0, self::DIM, array_fill(0, self::DIM, 0));
+        $this->board = array_fill(0, self::DIM, array_fill(0, self::DIM, []));
 
-        foreach ($lines as $lineNum => $line) {
-            $data = $this->squaresToFill($line);
-
-            foreach ($data as $y => $xs) {
-                foreach (array_keys($xs) as $x) {
-                    $curVal = $this->board[$y][$x];
-
-                    if ($curVal === 0) {
-                        $this->board[$y][$x] = 'X' . ($lineNum + 1);
-                    } elseif (strpos($curVal, 'X') === 0) {
-                        $this->board[$y][$x] = 2;
-                    } else {
-                        $this->board[$y][$x]++;
-                    }
-                }
-            }
+        foreach ($lines as $line) {
+            $this->fillArea($line);
         }
 
         echo 'part 1: ' . $this->squaresSeenMoreThanOnce() . PHP_EOL;
         echo 'part 2: ' . $this->getNonOverlapClaim($lines) . PHP_EOL;
     }
 
-    private function squaresToFill(string $line): array
+    private function parseLine(string $line): array
     {
-        preg_match('/^#\d+ @ (\d+),(\d+): (\d+)x(\d+)$/', trim($line), $matches);
+        preg_match('/^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$/', trim($line), $matches);
 
-        list(, $x, $y, $width, $height) = $matches;
+        return $matches;
+    }
 
-        $return = [];
+    private function fillArea(string $line)
+    {
+        list(, $lineNum, $x, $y, $width, $height) = $this->parseLine($line);
 
         for ($i = $x; $i < $x + $width; $i++) {
             for ($j = $y; $j < $y + $height; $j++) {
-                $return[$j][$i] = true;
+                $this->board[$j][$i][] = $lineNum;
             }
         }
-
-        return $return;
     }
 
     private function squaresSeenMoreThanOnce(): int
@@ -64,7 +51,7 @@ class Day3 extends AbstractProblem
 
         foreach ($this->board as $row => $cols) {
             foreach ($cols as $col) {
-                if ($col >= 2 && strpos($col, 'X') === false) {
+                if (count($col) > 1) {
                     $seenGt1++;
                 }
             }
@@ -75,37 +62,20 @@ class Day3 extends AbstractProblem
 
     private function getNonOverlapClaim(array $lines)
     {
-        foreach ($lines as $lineNum => $line) {
-            $data = $this->squaresToFill($line);
-            $actualLineNum = $lineNum + 1;
-            $toMatch = 'X' . $actualLineNum;
-            $totalSquares = array_sum(array_map('count', $data));
-            $matched = 0;
+        foreach ($lines as $line) {
+            list(, $lineNum, $x, $y, $width, $height) = $this->parseLine($line);
 
-            foreach ($data as $y => $xs) {
-                foreach (array_keys($xs) as $x) {
-                    $curVal = $this->board[$y][$x];
+            $cols = array_slice($this->board, $y, $height, true);
+            $area = array_map(function ($col) use ($x, $width) {
+                return array_slice($col, $x, $width, true);
+            }, $cols);
 
-                    if ($curVal === $toMatch) {
-                        $matched++;
-                    }
-                }
+            $flat = call_user_func_array('array_merge', $area);
+            $count = array_sum(array_map('count', $flat));
+
+            if ($count === ($width * $height)) {
+                return $lineNum;
             }
-
-            if ($matched == $totalSquares) {
-                return $actualLineNum;
-            }
-        }
-    }
-
-    private function printBoard()
-    {
-        foreach ($this->board as $row => $cols) {
-            foreach ($cols as $col) {
-                echo $col . "\t";
-            }
-
-            echo PHP_EOL;
         }
     }
 }
