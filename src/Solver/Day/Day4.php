@@ -10,6 +10,10 @@ class Day4 extends AbstractProblem
 
     private $guardSchedule = [];
 
+    private $sleepiestGuard;
+
+    private $minutesSlept;
+
     /**
      * @param array $input
      * @return int|string
@@ -20,6 +24,67 @@ class Day4 extends AbstractProblem
 
         $this->sortInput($lines);
         $this->createGuardSchedule();
+        $this->guardWhoSleepsMost();
+        list($sleepiestMinute,) = $this->getSleepiestMinute($this->sleepiestGuard);
+
+        echo 'part 1: ' . ($sleepiestMinute * $this->sleepiestGuard) . PHP_EOL;
+        echo 'part 2: ' . $this->getMostFrequentSleepyGuard() . PHP_EOL;
+    }
+
+    private function getMostFrequentSleepyGuard(): int
+    {
+        $maxOccurrence = -1;
+        $frequentGuard = -1;
+        $frequentMinute = -1;
+
+        foreach (array_keys($this->guardSchedule) as $guard) {
+            list($minute, $occurrences) = $this->getSleepiestMinute($guard);
+
+            if ($occurrences > $maxOccurrence) {
+                $maxOccurrence = $occurrences;
+                $frequentGuard = $guard;
+                $frequentMinute = $minute;
+            }
+        }
+
+        return $frequentMinute * $frequentGuard;
+    }
+
+    private function getSleepiestMinute(int $guard): array
+    {
+        $guardSchedule = $this->guardSchedule[$guard];
+        $minutes = [];
+
+        foreach ($guardSchedule as $schedule) {
+            $minutes = array_merge($minutes, array_keys($schedule));
+        }
+
+        $sortedMinutes = array_count_values($minutes);
+        arsort($sortedMinutes);
+
+        return [array_keys($sortedMinutes)[0] ?? -1, current($sortedMinutes)];
+    }
+
+    private function guardWhoSleepsMost()
+    {
+        $maxSleep = -1;
+        $sleepiestGuard = 0;
+
+        foreach ($this->guardSchedule as $guard => $schedules) {
+            if (empty($schedules)) {
+                continue;
+            }
+
+            $curSleep = count(call_user_func_array('array_merge', $schedules));
+
+            if ($curSleep > $maxSleep) {
+                $maxSleep = $curSleep;
+                $sleepiestGuard = $guard;
+            }
+        }
+
+        $this->sleepiestGuard = $sleepiestGuard;
+        $this->minutesSlept = $maxSleep;
     }
 
     private function createGuardSchedule()
@@ -37,8 +102,6 @@ class Day4 extends AbstractProblem
                 if (!array_key_exists($currentGuard, $this->guardSchedule)) {
                     $this->guardSchedule[$currentGuard] = [];
                 }
-
-                $this->guardSchedule[$currentGuard][$date] = array_fill(0, 59, false);
             } elseif ($text === 'falls asleep') {
                 $lastAsleep = (int)$minute;
             } elseif ($text === 'wakes up') {
